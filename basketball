@@ -1,0 +1,94 @@
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Game constants
+WIDTH, HEIGHT = 800, 600
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+BASKETBALL_COLOR = (200, 100, 50)
+
+# Screen setup
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('Retro Basketball Game')
+
+# Ball settings
+ball_radius = 15
+ball_speed = [5, -7]  # Speed of the ball [x, y]
+ball_position = [WIDTH // 4, HEIGHT - 100]
+
+# Hoop settings
+hoop_position = [WIDTH - 150, HEIGHT // 2]
+hoop_width, hoop_height = 100, 10
+
+# Gravity and game speed
+gravity = 0.5
+clock = pygame.time.Clock()
+FPS = 60
+
+# Font settings
+font = pygame.font.Font(None, 36)
+
+# Score
+score = 0
+
+def draw_ball():
+    pygame.draw.circle(screen, BASKETBALL_COLOR, ball_position, ball_radius)
+
+def draw_hoop():
+    pygame.draw.rect(screen, RED, (*hoop_position, hoop_width, hoop_height))
+
+def check_collision():
+    global score
+    # Check if ball hits the hoop
+    if hoop_position[0] < ball_position[0] < hoop_position[0] + hoop_width:
+        if hoop_position[1] <= ball_position[1] <= hoop_position[1] + hoop_height:
+            score += 1
+            reset_ball()
+
+def reset_ball():
+    ball_position[0] = random.randint(50, WIDTH // 2)
+    ball_position[1] = HEIGHT - 100
+    ball_speed[1] = -7  # Reset vertical speed
+
+# Main game loop
+running = True
+while running:
+    screen.fill(WHITE)
+    
+    # Draw objects
+    draw_ball()
+    draw_hoop()
+
+    # Update ball position
+    ball_speed[1] += gravity  # Gravity effect
+    ball_position[0] += ball_speed[0]
+    ball_position[1] += ball_speed[1]
+    
+    # Check collisions
+    check_collision()
+
+    # Ball bouncing off the walls
+    if ball_position[0] - ball_radius < 0 or ball_position[0] + ball_radius > WIDTH:
+        ball_speed[0] = -ball_speed[0]  # Invert X direction
+    if ball_position[1] + ball_radius > HEIGHT:
+        reset_ball()  # Ball hits the ground, reset
+    
+    # Display score
+    score_text = font.render(f"Score: {score}", True, BLACK)
+    screen.blit(score_text, (10, 10))
+    
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    
+    # Update screen
+    pygame.display.flip()
+    clock.tick(FPS)
+
+# Quit Pygame
+pygame.quit()
